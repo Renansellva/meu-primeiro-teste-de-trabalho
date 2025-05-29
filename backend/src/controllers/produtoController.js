@@ -1,6 +1,6 @@
 // backend/src/controllers/produtoController.js
 import db from '../config/database.js';
-import { v4 as uuidv4 } from 'uuid'; // Se você usa uuid em alguma função de produto
+// Não precisamos do uuid aqui por enquanto, a menos que você queira gerar códigos de produto automaticamente.
 
 // Função para CRIAR um novo Produto/Peça
 export async function criarProduto(req, res) {
@@ -29,13 +29,14 @@ export async function criarProduto(req, res) {
       codigo_interno,
       descricao,
       unidade_medida,
-      quantidade_estoque,
-      estoque_minimo,
-      preco_custo_medio: preco_custo_medio || null,
-      preco_venda_padrao: preco_venda_padrao || null,
+      quantidade_estoque: Number(quantidade_estoque), // Garante que seja número
+      estoque_minimo: Number(estoque_minimo),       // Garante que seja número
+      preco_custo_medio: preco_custo_medio ? parseFloat(preco_custo_medio) : null,
+      preco_venda_padrao: preco_venda_padrao ? parseFloat(preco_venda_padrao) : null,
       fornecedor_principal,
       localizacao_estoque,
       data_ultima_compra: data_ultima_compra || null,
+      // data_cadastro e data_atualizacao usarão os defaults do DB
     }).returning('id');
 
     const novoProduto = await db('produtos_pecas').where({ id }).first();
@@ -57,7 +58,8 @@ export async function listarProdutos(req, res) {
   try {
     const produtos = await db('produtos_pecas')
       .select('*')
-      .orderBy('nome_produto', 'asc');
+      .orderBy('nome_produto', 'asc'); // Ordena por nome
+
     res.status(200).json(produtos);
   } catch (error) {
     console.error("Erro ao listar produtos/peças:", error);
@@ -65,7 +67,7 @@ export async function listarProdutos(req, res) {
   }
 }
 
-// Função para BUSCAR um Produto/Peça pelo ID <<<<<<< VERIFIQUE ESTA FUNÇÃO
+// Função para BUSCAR um Produto/Peça pelo ID
 export async function buscarProdutoPorId(req, res) {
   const { id } = req.params;
   try {
@@ -76,7 +78,7 @@ export async function buscarProdutoPorId(req, res) {
       res.status(404).json({ erro: 'Produto/Peça não encontrado(a).' });
     }
   } catch (error) {
-    console.error("Erro ao buscar produto/peça:", error);
+    console.error("Erro ao buscar produto/peça por ID:", error); // Mensagem de log específica
     res.status(500).json({ erro: 'Erro ao buscar produto/peça no banco de dados.', detalhe: error.message });
   }
 }
@@ -95,7 +97,10 @@ export async function pesquisarProdutos(req, res) {
     if (produtosEncontrados.length > 0) {
       res.status(200).json(produtosEncontrados);
     } else {
-      res.status(404).json({ mensagem: 'Nenhum produto/peça encontrado com este nome.', resultado: [] });
+      // Retorna 200 com lista vazia em vez de 404 para indicar que a busca ocorreu, mas nada foi encontrado
+      res.status(200).json([]);
+      // Se preferir um 404:
+      // res.status(404).json({ mensagem: 'Nenhum produto/peça encontrado com este nome.', resultado: [] });
     }
   } catch (error) {
     console.error("Erro ao pesquisar produtos/peças:", error);
@@ -144,4 +149,80 @@ export async function registrarVendaProduto(req, res) {
   }
 }
 
-// (Funções para ATUALIZAR e DELETAR produtos virão aqui)
+// Função para ATUALIZAR um Produto/Peça existente
+export async function atualizarProduto(req, res) {
+  const { id } = req.params;
+  const dadosEntrada = req.body;
+
+  const camposPermitidos = [
+    'nome_produto', 'codigo_interno', 'descricao', 'unidade_medida',
+    'quantidade_estoque', 'estoque_minimo', 'preco_custo_medio',
+    'preco_venda_padrao', 'fornecedor_principal', 'localizacao_estoque',
+    'data_ultima_compra'
+  ];
+
+  const dadosParaAtualizar = {};
+  let algumCampoValidoPresente = false;
+
+  for (const campo of camposPermitidos) {
+    if (dadosEntrada[campo] !== undefined) {
+      if (campo === 'quantidade_estoque' && (typeof dadosEntrada[campo] !== 'number' || dadosEntrada[campo] < 0)) {
+        return res.status(400).json({ erro: 'Quantidade em estoque deve ser um número não negativo.' });
+      }
+      if ((campo === 'preco_custo_medio' || campo === 'preco_venda_padrao') && dadosEntrada[campo] !== null && (typeof dadosEntrada[campo] !== 'number' || dadosEntrada[campo] < 0)) {
+        return res.status(400).json({ erro: `O campo ${campo} deve ser um número não negativo ou nulo.` });
+      }
+      dadosParaAtualizar[campo] = dadosEntrada[campo];
+      algumCampoValidoPresente = true;
+    }
+  }
+
+  if (!algumCampoValidoPresente) {
+    return res.status(400).json({ erro: 'Nenhum dado válido fornecido para atualização.' });
+  }
+
+  dadosParaAtualizar.data_atualizacao = db.fn.now();
+
+  try {
+    const atualizado = await db('produtos_pecas')
+      .where({ id })
+      .update(dadosParaAtualizar);
+
+    if (atualizado) {
+      const produtoAtualizado = await db('produtos_pecas').where({ id }).first();
+      res.status(200).json(produtoAtualizado);
+    } else {
+      res.status(404).json({ erro: 'Produto/Peça não encontrado(a) para atualização.' });
+    }
+  } catch (error) {
+    console.error("Erro ao atualizar produto/peça:", error);
+    if (error.code === 'SQLITE_CONSTRAINT') {
+      if (error.message.includes('UNIQUE constraint failed: produtos_pecas.nome_produto')) {
+        return res.status(409).json({ erro: 'Já existe um produto/peça com este nome.' });
+      }
+      if (error.message.includes('UNIQUE constraint failed: produtos_pecas.codigo_interno')) {
+        return res.status(409).json({ erro: 'Já existe um produto/peça com este código interno.' });
+      }
+    }
+    res.status(500).json({ erro: 'Erro ao atualizar produto/peça no banco de dados.', detalhe: error.message });
+  }
+}
+
+// Função para DELETAR um Produto/Peça
+export async function deletarProduto(req, res) {
+  const { id } = req.params;
+  try {
+    const deletado = await db('produtos_pecas').where({ id }).del();
+    if (deletado) {
+      res.status(200).json({ mensagem: 'Produto/Peça deletado(a) com sucesso.' });
+    } else {
+      res.status(404).json({ erro: 'Produto/Peça não encontrado(a) para deleção.' });
+    }
+  } catch (error) {
+    console.error("Erro ao deletar produto/peça:", error);
+     if (error.code === 'SQLITE_CONSTRAINT_FOREIGNKEY' || (error.message && error.message.toLowerCase().includes('foreign key constraint failed'))) {
+        return res.status(409).json({ erro: 'Este produto/peça não pode ser deletado pois está associado a outros registros.', detalhe: error.message });
+    }
+    res.status(500).json({ erro: 'Erro ao deletar produto/peça no banco de dados.', detalhe: error.message });
+  }
+}

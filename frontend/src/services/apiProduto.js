@@ -3,7 +3,7 @@ import axios from 'axios';
 
 const API_BASE_URL = 'http://localhost:3001/api';
 
-// ... (funções getProdutos, createProduto, getProdutoPorId, pesquisarProdutosPorNome já existentes) ...
+// Função para buscar todos os produtos
 export const getProdutos = async () => {
   try {
     const response = await axios.get(`${API_BASE_URL}/produtos`);
@@ -14,6 +14,7 @@ export const getProdutos = async () => {
   }
 };
 
+// Função para criar um novo produto
 export const createProduto = async (produtoData) => {
   try {
     const response = await axios.post(`${API_BASE_URL}/produtos`, produtoData);
@@ -24,6 +25,7 @@ export const createProduto = async (produtoData) => {
   }
 };
 
+// Função para buscar um produto pelo ID
 export const getProdutoPorId = async (id) => {
   try {
     const response = await axios.get(`${API_BASE_URL}/produtos/${id}`);
@@ -34,6 +36,7 @@ export const getProdutoPorId = async (id) => {
   }
 };
 
+// Função para pesquisar produtos por nome
 export const pesquisarProdutosPorNome = async (nome) => {
   try {
     const response = await axios.get(`${API_BASE_URL}/produtos/pesquisar`, {
@@ -49,17 +52,48 @@ export const pesquisarProdutosPorNome = async (nome) => {
   }
 };
 
-// --- NOVA FUNÇÃO ABAIXO ---
+// Função para registrar a venda de um produto
 export const registrarVendaProduto = async (id, quantidadeVendida) => {
   try {
     const response = await axios.post(`${API_BASE_URL}/produtos/${id}/registrar-venda`, {
-      quantidadeVendida // O corpo da requisição será: { "quantidadeVendida": valor }
+      quantidadeVendida
     });
-    return response.data; // Espera-se { mensagem: '...', produto: produtoAtualizado }
+    return response.data;
   } catch (error) {
     console.error(`Erro ao registrar venda do produto ${id}:`, error.response ? error.response.data : error.message);
-    throw error; // Re-lança o erro para ser tratado pelo componente
+    throw error;
   }
 };
 
-// (Funções para updateProduto e deleteProduto de forma geral virão depois)
+// Função para ATUALIZAR um produto/peça pelo ID
+export const updateProduto = async (id, produtoData) => {
+  try {
+    const response = await axios.put(`${API_BASE_URL}/produtos/${id}`, produtoData);
+    return response.data; // Retorna o produto atualizado
+  } catch (error) {
+    console.error(`Erro ao atualizar produto ${id}:`, error.response ? error.response.data : error.message);
+    throw error;
+  }
+};
+
+// Função para DELETAR um produto/peça pelo ID
+export const deleteProduto = async (id) => {
+  try {
+    const response = await axios.delete(`${API_BASE_URL}/produtos/${id}`);
+    return response.data; // Geralmente retorna uma mensagem de sucesso
+  } catch (error) {
+    console.error(`Erro ao deletar produto ${id}:`, error.response ? error.response.data : error.message);
+    throw error;
+  }
+};
+
+// O trecho abaixo estava duplicado e foi REMOVIDO:
+// export const getProdutos = async () => {
+//   try {
+//     const response = await axios.get(`${API_BASE_URL}/produtos`);
+//     return response.data;
+//   } catch (error) {
+//     console.error("Erro ao buscar produtos:", error.response ? error.response.data : error.message);
+//     throw error; // Importante para que a página possa tratar o erro
+//   }
+// };
