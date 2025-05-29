@@ -67,3 +67,33 @@ export async function listarProdutos(req, res) {
 }
 
 // (Adicionaremos as funções para buscar por ID, atualizar, deletar aqui depois)
+
+
+
+
+// backend/src/controllers/produtoController.js
+//import db from '../config/database.js';
+
+// ... (funções criarProduto e listarProdutos já existem aqui - mantenha-as) ...
+
+// --- NOVA FUNÇÃO ABAIXO ---
+
+// Função para BUSCAR um Produto/Peça pelo ID
+export async function buscarProdutoPorId(req, res) {
+  const { id } = req.params; // Pega o ID dos parâmetros da rota
+
+  try {
+    const produto = await db('produtos_pecas').where({ id }).first(); // .first() para pegar apenas um resultado
+
+    if (produto) {
+      res.status(200).json(produto);
+    } else {
+      res.status(404).json({ erro: 'Produto/Peça não encontrado(a).' });
+    }
+  } catch (error) {
+    console.error("Erro ao buscar produto/peça:", error);
+    res.status(500).json({ erro: 'Erro ao buscar produto/peça no banco de dados.', detalhe: error.message });
+  }
+}
+
+// (Adicionaremos as funções para atualizar e deletar aqui depois)
