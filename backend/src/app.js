@@ -4,7 +4,8 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 
 import clienteRoutes from './routes/clienteRoutes.js';
-import ordemServicoRoutes from './routes/ordemServicoRoutes.js'; // 👈 Adicione esta linha
+import ordemServicoRoutes from './routes/ordemServicoRoutes.js';
+import produtoRoutes from './routes/produtoRoutes.js'; // 👈 Adicione esta linha
 
 dotenv.config({ path: '../.env' });
 
@@ -18,6 +19,7 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api/clientes', clienteRoutes);
-app.use('/api/ordens-servico', ordemServicoRoutes); // 👈 Adicione esta linha
+app.use('/api/ordens-servico', ordemServicoRoutes);
+app.use('/api/produtos', produtoRoutes); // 👈 Adicione esta linha
 
 export default app;
