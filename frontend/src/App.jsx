@@ -2,12 +2,13 @@
 import React from 'react';
 import { Routes, Route, Link } from 'react-router-dom';
 import ClientesPage from './pages/ClientesPage';
-import ProdutosPage from './pages/ProdutosPage'; // 👈 Importar a nova página
-// Importe aqui outras páginas no futuro (ex: OrdensServicoPage, CaixaPage)
+import ProdutosPage from './pages/ProdutosPage';
+import OrdensServicoPage from './pages/OrdensServicoPage'; // Importa a página de Ordens de Serviço
 
-// import './style.css'; // Se o seu CSS principal estiver aqui
+// Se você tiver estilos globais que quer aplicar aqui ou no main.jsx
+// import './style.css';
 
-// Componente PixCafezinho (se você o tiver)
+// Componente PixCafezinho (opcional, você pode remover se não for usar)
 function PixCafezinho() {
   return (
     <div className="pix-cafezinho">
@@ -17,33 +18,57 @@ function PixCafezinho() {
   );
 }
 
-
 function App() {
   return (
     <div className="App">
-      <header style={{ background: '#1a1c29', color: 'white', padding: '15px 30px', marginBottom: '20px', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>
-        <h1 style={{ margin: 0, fontSize: '1.8em' }}>Minha Loja - Gestão</h1>
-        <nav>
-          <ul style={{ listStyle: 'none', padding: 0, margin: '10px 0 0 0', display: 'flex', gap: '20px' }}>
-            <li><Link to="/" style={{ color: '#30e88b', textDecoration: 'none', fontWeight: 'bold' }}>Dashboard (Início)</Link></li>
-            <li><Link to="/clientes" style={{ color: '#30e88b', textDecoration: 'none', fontWeight: 'bold' }}>Clientes</Link></li>
-            <li><Link to="/produtos" style={{ color: '#30e88b', textDecoration: 'none', fontWeight: 'bold' }}>Produtos</Link></li>
-            {/* Adicione links para Ordens de Serviço, Caixa, etc. aqui */}
+      <header style={{
+        background: '#1a1c29', // Um tom escuro para o cabeçalho
+        color: 'white',
+        padding: '15px 30px',
+        marginBottom: '20px',
+        boxShadow: '0 2px 5px rgba(0,0,0,0.25)' // Sombra mais suave
+      }}>
+        <h1 style={{ margin: 0, fontSize: '1.8em', textAlign: 'left' }}>Minha Loja - Gestão</h1>
+        <nav style={{ marginTop: '10px' }}>
+          <ul style={{
+            listStyle: 'none',
+            padding: 0,
+            margin: 0,
+            display: 'flex',
+            flexWrap: 'wrap', // Permite que os botões quebrem linha em telas menores
+            justifyContent: 'flex-start', // Alinha à esquerda
+            gap: '10px' // Espaço entre os botões
+          }}>
+            <li><Link to="/" className="nav-button">Dashboard</Link></li>
+            <li><Link to="/clientes" className="nav-button">Clientes</Link></li>
+            <li><Link to="/produtos" className="nav-button">Produtos</Link></li>
+            <li><Link to="/ordens-servico" className="nav-button">Ordens de Serviço</Link></li>
+            {/* Adicione mais links de navegação aqui no futuro */}
           </ul>
         </nav>
       </header>
 
-      <main style={{ padding: '0 20px' }}>
+      <main style={{ padding: '0 20px 20px 20px' }}> {/* Adicionado padding inferior */}
         <Routes>
-          {/* A rota "/" pode ser um DashboardPage no futuro */}
-          <Route path="/" element={<div><h2>Bem-vindo ao Sistema!</h2><p>Selecione uma opção no menu acima.</p></div>} />
+          <Route path="/" element={
+            <div style={{ textAlign: 'center', marginTop: '50px' }}>
+              <h2>Bem-vindo ao Sistema de Gestão!</h2>
+              <p>Selecione uma opção no menu acima para começar.</p>
+            </div>
+          } />
           <Route path="/clientes" element={<ClientesPage />} />
           <Route path="/produtos" element={<ProdutosPage />} />
-          {/* Defina outras rotas aqui */}
+          <Route path="/ordens-servico" element={<OrdensServicoPage />} />
+          {/* Defina outras rotas para os módulos de Caixa, Relatórios, etc. aqui */}
         </Routes>
       </main>
 
-      {/* <PixCafezinho /> */} {/* Se quiser manter o PixCafezinho, descomente e certifique-se que o componente está definido */}
+      {/* Se quiser manter o PixCafezinho, descomente a linha abaixo */}
+      {/* <PixCafezinho /> */}
+
+      <footer style={{ textAlign: 'center', padding: '20px', marginTop: '40px', borderTop: '1px solid #333', color: '#aaa' }}>
+        <p>&copy; {new Date().getFullYear()} Minha Loja - Sistema de Gestão</p>
+      </footer>
     </div>
   );
 }
