@@ -6,12 +6,13 @@ import ProdutosPage from './pages/ProdutosPage';
 import OrdensServicoPage from './pages/OrdensServicoPage'; // Importa a página de Ordens de Serviço
 
 // Se você tiver estilos globais que quer aplicar aqui ou no main.jsx
-// import './style.css';
+// import './style.css'; // ou o nome do seu arquivo CSS principal
 
 // Componente PixCafezinho (opcional, você pode remover se não for usar)
 function PixCafezinho() {
   return (
     <div className="pix-cafezinho">
+      {/* Certifique-se que esta imagem está na pasta /public */}
       <img src="/pixQrCode.jpeg" alt="QR Code Pix para um cafezinho" />
       <span>Pix para um cafezinho ☕</span>
     </div>
@@ -43,7 +44,7 @@ function App() {
             <li><Link to="/clientes" className="nav-button">Clientes</Link></li>
             <li><Link to="/produtos" className="nav-button">Produtos</Link></li>
             <li><Link to="/ordens-servico" className="nav-button">Ordens de Serviço</Link></li>
-            {/* Adicione mais links de navegação aqui no futuro */}
+            {/* Adicione mais links de navegação aqui no futuro (Ex: Caixa, Relatórios) */}
           </ul>
         </nav>
       </header>
@@ -63,7 +64,7 @@ function App() {
         </Routes>
       </main>
 
-      {/* Se quiser manter o PixCafezinho, descomente a linha abaixo */}
+      {/* Se quiser manter o PixCafezinho, descomente a linha abaixo e garanta que o componente está definido */}
       {/* <PixCafezinho /> */}
 
       <footer style={{ textAlign: 'center', padding: '20px', marginTop: '40px', borderTop: '1px solid #333', color: '#aaa' }}>

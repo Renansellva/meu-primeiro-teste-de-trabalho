@@ -1,7 +1,7 @@
 // frontend/src/services/apiOrdemServico.js
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:3001/api';
+const API_BASE_URL = 'http://localhost:3001/api'; // URL base do seu backend
 
 // Função para buscar todas as Ordens de Serviço
 export const getOrdensServico = async () => {
@@ -11,7 +11,7 @@ export const getOrdensServico = async () => {
     return response.data;
   } catch (error) {
     console.error("Erro ao buscar Ordens de Serviço:", error.response ? error.response.data : error.message);
-    throw error;
+    throw error; // Re-lança o erro para ser tratado pelo componente
   }
 };
 
@@ -26,4 +26,15 @@ export const createOrdemServico = async (osData) => {
   }
 };
 
-// (Adicionaremos getOrdemServicoPorId, updateOrdemServico, deleteOrdemServico aqui depois)
+// Função para buscar uma Ordem de Serviço específica pelo ID (para uso futuro)
+export const getOrdemServicoPorId = async (id) => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/ordens-servico/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Erro ao buscar Ordem de Serviço ${id}:`, error.response ? error.response.data : error.message);
+    throw error;
+  }
+};
+
+// (Adicionaremos updateOrdemServico e deleteOrdemServico aqui depois)
