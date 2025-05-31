@@ -29,8 +29,8 @@ export async function criarProduto(req, res) {
       codigo_interno,
       descricao,
       unidade_medida,
-      quantidade_estoque: Number(quantidade_estoque), // Garante que seja número
-      estoque_minimo: Number(estoque_minimo),       // Garante que seja número
+      quantidade_estoque: Number(quantidade_estoque),
+      estoque_minimo: Number(estoque_minimo),
       preco_custo_medio: preco_custo_medio ? parseFloat(preco_custo_medio) : null,
       preco_venda_padrao: preco_venda_padrao ? parseFloat(preco_venda_padrao) : null,
       fornecedor_principal,
@@ -58,7 +58,7 @@ export async function listarProdutos(req, res) {
   try {
     const produtos = await db('produtos_pecas')
       .select('*')
-      .orderBy('nome_produto', 'asc'); // Ordena por nome
+      .orderBy('nome_produto', 'asc');
 
     res.status(200).json(produtos);
   } catch (error) {
@@ -78,7 +78,7 @@ export async function buscarProdutoPorId(req, res) {
       res.status(404).json({ erro: 'Produto/Peça não encontrado(a).' });
     }
   } catch (error) {
-    console.error("Erro ao buscar produto/peça por ID:", error); // Mensagem de log específica
+    console.error("Erro ao buscar produto/peça por ID:", error);
     res.status(500).json({ erro: 'Erro ao buscar produto/peça no banco de dados.', detalhe: error.message });
   }
 }
@@ -97,10 +97,7 @@ export async function pesquisarProdutos(req, res) {
     if (produtosEncontrados.length > 0) {
       res.status(200).json(produtosEncontrados);
     } else {
-      // Retorna 200 com lista vazia em vez de 404 para indicar que a busca ocorreu, mas nada foi encontrado
-      res.status(200).json([]);
-      // Se preferir um 404:
-      // res.status(404).json({ mensagem: 'Nenhum produto/peça encontrado com este nome.', resultado: [] });
+      res.status(200).json([]); // Retorna lista vazia se nada for encontrado
     }
   } catch (error) {
     console.error("Erro ao pesquisar produtos/peças:", error);
@@ -111,7 +108,7 @@ export async function pesquisarProdutos(req, res) {
 // Função para REGISTRAR A VENDA de um Produto/Peça e diminuir o estoque
 export async function registrarVendaProduto(req, res) {
   const { id } = req.params;
-  const { quantidadeVendida } = req.body;
+  const { quantidadeVendida, cliente_id, observacoes_venda } = req.body;
 
   if (quantidadeVendida === undefined || typeof quantidadeVendida !== 'number' || quantidadeVendida <= 0) {
     return res.status(400).json({ erro: 'A quantidade vendida deve ser um número positivo.' });
@@ -137,8 +134,22 @@ export async function registrarVendaProduto(req, res) {
           quantidade_estoque: novoEstoque,
           data_atualizacao: db.fn.now()
         });
+
+      const valorDaVenda = (produto.preco_venda_padrao || 0) * quantidadeVendida;
+      if (valorDaVenda > 0) {
+        await trx('itens_de_caixa').insert({
+          descricao: `Venda: ${quantidadeVendida}x ${produto.nome_produto} (ID Prod: ${id})`,
+          tipo_movimentacao: 'Entrada',
+          valor: valorDaVenda,
+          data_movimentacao: db.fn.now(),
+          categoria: 'Venda de Produto',
+          cliente_id: cliente_id || null,
+          observacoes: observacoes_venda || `Venda de ${quantidadeVendida} unidade(s).`
+        });
+      }
+      
       const produtoAtualizado = await trx('produtos_pecas').where({ id }).first();
-      res.status(200).json({ mensagem: 'Venda registrada e estoque atualizado com sucesso!', produto: produtoAtualizado });
+      res.status(200).json({ mensagem: 'Venda registrada, estoque atualizado e caixa lançado com sucesso!', produto: produtoAtualizado });
     });
   } catch (error) {
     console.error("Erro ao registrar venda do produto:", error);
