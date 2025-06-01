@@ -3,10 +3,10 @@ import React, { useState, useEffect } from 'react';
 import { createOrdemServico, updateOrdemServico } from '../../services/apiOrdemServico';
 // A lista de clientes será passada via props pela OrdensServicoPage
 
+// Props: onOsSalva, osParaEditar, onEdicaoCancelada, clientes (lista de clientes)
 function OrdemServicoForm({ onOsSalva, osParaEditar, onEdicaoCancelada, clientes }) {
-  // Estados para os campos do formulário
   const [clienteId, setClienteId] = useState('');
-  const [tipoEquipamento, setTipoEquipamento] = useState(''); // Declarado aqui
+  const [tipoEquipamento, setTipoEquipamento] = useState('');
   const [marcaEquipamento, setMarcaEquipamento] = useState('');
   const [modeloEquipamento, setModeloEquipamento] = useState('');
   const [numeroSerieImei, setNumeroSerieImei] = useState('');
@@ -15,14 +15,13 @@ function OrdemServicoForm({ onOsSalva, osParaEditar, onEdicaoCancelada, clientes
   const [valorServicoMaoDeObra, setValorServicoMaoDeObra] = useState('');
   const [valorTotalPecas, setValorTotalPecas] = useState('');
   const [valorDesconto, setValorDesconto] = useState('');
-  const [statusOs, setStatusOs] = useState('Orçamento'); // Status inicial padrão
+  const [statusOs, setStatusOs] = useState('Orçamento');
   const [diagnosticoTecnico, setDiagnosticoTecnico] = useState('');
   const [servicoExecutado, setServicoExecutado] = useState('');
   const [pecasUtilizadas, setPecasUtilizadas] = useState('');
   const [observacoesInternas, setObservacoesInternas] = useState('');
   const [dataPrevisaoEntrega, setDataPrevisaoEntrega] = useState('');
   const [formaPagamento, setFormaPagamento] = useState('');
-  // Adicione mais estados se tiver mais campos no seu backend/migration
 
   const [erro, setErro] = useState('');
   const [sucesso, setSucesso] = useState('');
@@ -31,29 +30,17 @@ function OrdemServicoForm({ onOsSalva, osParaEditar, onEdicaoCancelada, clientes
   const ehModoEdicao = Boolean(osParaEditar && osParaEditar.id);
 
   const limparFormulario = () => {
-    setClienteId('');
-    setTipoEquipamento('');
-    setMarcaEquipamento('');
-    setModeloEquipamento('');
-    setNumeroSerieImei('');
-    setDefeitoRelatadoCliente('');
-    setAcessoriosDeixados('');
-    setValorServicoMaoDeObra('');
-    setValorTotalPecas('');
-    setValorDesconto('');
-    setStatusOs('Orçamento');
-    setDiagnosticoTecnico('');
-    setServicoExecutado('');
-    setPecasUtilizadas('');
-    setObservacoesInternas('');
-    setDataPrevisaoEntrega('');
-    setFormaPagamento('');
-    setErro('');
-    setSucesso('');
+    setClienteId(''); setTipoEquipamento(''); setMarcaEquipamento('');
+    setModeloEquipamento(''); setNumeroSerieImei(''); setDefeitoRelatadoCliente('');
+    setAcessoriosDeixados(''); setValorServicoMaoDeObra(''); setValorTotalPecas('');
+    setValorDesconto(''); setStatusOs('Orçamento'); setDiagnosticoTecnico('');
+    setServicoExecutado(''); setPecasUtilizadas(''); setObservacoesInternas('');
+    setDataPrevisaoEntrega(''); setFormaPagamento('');
+    setErro(''); setSucesso('');
   };
-
+  
   useEffect(() => {
-    if (ehModoEdicao) {
+    if (ehModoEdicao && osParaEditar) {
       setClienteId(String(osParaEditar.cliente_id || ''));
       setTipoEquipamento(osParaEditar.tipo_equipamento || '');
       setMarcaEquipamento(osParaEditar.marca_equipamento || '');
@@ -61,29 +48,28 @@ function OrdemServicoForm({ onOsSalva, osParaEditar, onEdicaoCancelada, clientes
       setNumeroSerieImei(osParaEditar.numero_serie_imei || '');
       setDefeitoRelatadoCliente(osParaEditar.defeito_relatado_cliente || '');
       setAcessoriosDeixados(osParaEditar.acessorios_deixados || '');
-      setValorServicoMaoDeObra(osParaEditar.valor_servico_mao_de_obra !== null ? String(osParaEditar.valor_servico_mao_de_obra) : '');
-      setValorTotalPecas(osParaEditar.valor_total_pecas !== null ? String(osParaEditar.valor_total_pecas) : '');
-      setValorDesconto(osParaEditar.valor_desconto !== null ? String(osParaEditar.valor_desconto) : '');
+      setValorServicoMaoDeObra(osParaEditar.valor_servico_mao_de_obra !== null ? String(osParaEditar.valor_servico_mao_de_obra) : '0');
+      setValorTotalPecas(osParaEditar.valor_total_pecas !== null ? String(osParaEditar.valor_total_pecas) : '0');
+      setValorDesconto(osParaEditar.valor_desconto !== null ? String(osParaEditar.valor_desconto) : '0');
       setStatusOs(osParaEditar.status_os || 'Orçamento');
       setDiagnosticoTecnico(osParaEditar.diagnostico_tecnico || '');
       setServicoExecutado(osParaEditar.servico_executado || '');
       setPecasUtilizadas(osParaEditar.pecas_utilizadas || '');
       setObservacoesInternas(osParaEditar.observacoes_internas || '');
-      setDataPrevisaoEntrega(osParaEditar.data_previsao_entrega ? osParaEditar.data_previsao_entrega.split('T')[0] : '');
+      const dataFormatada = osParaEditar.data_previsao_entrega ? osParaEditar.data_previsao_entrega.split('T')[0] : '';
+      setDataPrevisaoEntrega(dataFormatada);
       setFormaPagamento(osParaEditar.forma_pagamento || '');
-      setSucesso('');
-      setErro('');
+      setSucesso(''); setErro('');
     } else {
       limparFormulario();
     }
-  }, [osParaEditar]); // Removido ehModoEdicao daqui, pois ele é derivado de osParaEditar
+  }, [osParaEditar]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setErro('');
-    setSucesso('');
+    setErro(''); setSucesso('');
 
-    if (!clienteId || !tipoEquipamento || !marcaEquipamento || !modeloEquipamento || !defeitoRelatadoCliente || !valorServicoMaoDeObra) {
+    if (!clienteId || !tipoEquipamento || !marcaEquipamento || !modeloEquipamento || !defeitoRelatadoCliente || valorServicoMaoDeObra.trim() === '') {
       setErro('Cliente, tipo, marca, modelo, defeito e valor da mão de obra são obrigatórios.');
       return;
     }
@@ -107,23 +93,27 @@ function OrdemServicoForm({ onOsSalva, osParaEditar, onEdicaoCancelada, clientes
       observacoes_internas: observacoesInternas || null,
       data_previsao_entrega: dataPrevisaoEntrega || null,
       forma_pagamento: formaPagamento || null,
-      // Adicione aqui os outros campos da OS que você tem no estado e quer enviar
-      // como 'servico_autorizado_cliente', 'garantia_servico', etc.
+      // Adicione aqui outros campos da OS que você tem no estado e quer enviar
+      // servico_autorizado_cliente, garantia_servico - se você os adicionou ao formulário
     };
 
     try {
       if (ehModoEdicao) {
         const osAtualizada = await updateOrdemServico(osParaEditar.id, dadosOS);
-        setSucesso(`O.S. #${osAtualizada.numero_os} atualizada com sucesso!`);
+        setSucesso(`O.S. #${osAtualizada.numero_os || osParaEditar.numero_os} atualizada com sucesso!`);
       } else {
         const osCriada = await createOrdemServico(dadosOS);
         setSucesso(`O.S. #${osCriada.numero_os} criada com sucesso!`);
-        // Não limpa o formulário aqui imediatamente, o useEffect cuidará disso quando onOsSalva for chamado
-        // e osParaEditar for setado para null (pela página pai).
       }
       if (onOsSalva) {
-        onOsSalva();
+        onOsSalva(); // Notifica a página para recarregar a lista e limpar o modo edição
       }
+      // Se não for modo de edição, o useEffect cuidará de limpar o formulário quando onOsSalva() setar osParaEditar para null.
+      // Se for modo de criação bem-sucedida, e onOsSalva não limpar osParaEditar (porque já é null), limpamos aqui.
+      if(!ehModoEdicao) {
+        limparFormulario();
+      }
+
     } catch (error) {
       setErro(error.response?.data?.erro || `Falha ao ${ehModoEdicao ? 'atualizar' : 'criar'} O.S.`);
     }
@@ -135,6 +125,8 @@ function OrdemServicoForm({ onOsSalva, osParaEditar, onEdicaoCancelada, clientes
     "Aguardando Peças", "Em Reparo", "Pronto para Retirada", 
     "Entregue", "Pago", "Finalizado e Pago", "Cancelado", "Sem Reparo"
   ];
+  const listaFormasPagamento = ["", "Espécie", "Pix", "Cartão de Crédito", "Cartão de Débito", "Transferência Bancária", "Outro"];
+
 
   return (
     <form onSubmit={handleSubmit} className="os-form" style={{ marginBottom: '30px', padding: '20px', border: '1px solid #313b5f', borderRadius: '8px', background: 'rgba(28, 33, 54, 0.96)' }}>
@@ -149,7 +141,7 @@ function OrdemServicoForm({ onOsSalva, osParaEditar, onEdicaoCancelada, clientes
             <option value="">Selecione um cliente</option>
             {clientes && clientes.map(cliente => (
               <option key={cliente.id} value={cliente.id}>
-                {cliente.nome_completo}
+                {cliente.nome_completo} (ID: {cliente.id})
               </option>
             ))}
           </select>
@@ -225,7 +217,10 @@ function OrdemServicoForm({ onOsSalva, osParaEditar, onEdicaoCancelada, clientes
         </div>
         <div>
             <label htmlFor="formaPagamentoOS">Forma de Pagamento:</label>
-            <input type="text" id="formaPagamentoOS" value={formaPagamento} onChange={(e) => setFormaPagamento(e.target.value)} />
+            <select id="formaPagamentoOS" value={formaPagamento} onChange={(e) => setFormaPagamento(e.target.value)}>
+                <option value="">Selecione (Opcional)</option>
+                {listaFormasPagamento.map(forma => <option key={forma} value={forma}>{forma}</option>)}
+            </select>
         </div>
       </div>
 
@@ -234,7 +229,7 @@ function OrdemServicoForm({ onOsSalva, osParaEditar, onEdicaoCancelada, clientes
           {enviando ? (ehModoEdicao ? 'Salvando...' : 'Criando...') : (ehModoEdicao ? 'Salvar Alterações da OS' : 'Criar OS')}
         </button>
         {ehModoEdicao && (
-          <button type="button" onClick={onEdicaoCancelada} className="button" style={{ backgroundColor: '#6c757d' }}>
+          <button type="button" onClick={() => { if(onEdicaoCancelada) onEdicaoCancelada(); }} className="button" style={{ backgroundColor: '#6c757d' }}>
             Cancelar Edição
           </button>
         )}

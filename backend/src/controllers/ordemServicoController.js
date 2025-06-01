@@ -17,16 +17,16 @@ export async function criarOrdemServico(req, res) {
     valor_servico_mao_de_obra,
     valor_total_pecas = 0,
     valor_desconto = 0,
-    status_os = 'Orçamento',
+    status_os = 'Orçamento', // Status inicial padrão
     observacoes_internas,
     acessorios_deixados,
     senha_equipamento,
-    servico_autorizado_cliente = false, // Default para false
+    servico_autorizado_cliente = false,
     data_previsao_entrega,
     garantia_servico,
-    data_orcamento, // Adicionado
-    data_aprovacao_orcamento, // Adicionado
-    forma_pagamento // Adicionado
+    data_orcamento,
+    data_aprovacao_orcamento,
+    forma_pagamento
   } = req.body;
 
   if (!cliente_id || !tipo_equipamento || !marca_equipamento || !modelo_equipamento || !defeito_relatado_cliente || valor_servico_mao_de_obra === undefined) {
@@ -35,10 +35,12 @@ export async function criarOrdemServico(req, res) {
     });
   }
 
+  // Gera um número de OS único
   const numero_os = `OS-${Date.now()}-${uuidv4().substring(0, 6).toUpperCase()}`;
   const valorTotalOSCalculado = (Number(valor_servico_mao_de_obra) + Number(valor_total_pecas)) - Number(valor_desconto);
 
   try {
+    // Verifica se o cliente_id existe
     const clienteExistente = await db('clientes').where({ id: cliente_id }).first();
     if (!clienteExistente) {
       return res.status(404).json({ erro: 'Cliente não encontrado com o ID fornecido.' });
@@ -68,10 +70,11 @@ export async function criarOrdemServico(req, res) {
       data_orcamento: data_orcamento || null,
       data_aprovacao_orcamento: data_aprovacao_orcamento || null,
       garantia_servico: garantia_servico || null,
-      forma_pagamento
+      forma_pagamento: forma_pagamento || null
       // data_entrada, data_criacao_os, data_atualizacao_os usarão os defaults do DB ou serão preenchidos na atualização
     }).returning('id');
 
+    // Busca a O.S. recém-criada para retornar com o nome do cliente
     const novaOS = await db('ordens_de_servico')
       .join('clientes', 'ordens_de_servico.cliente_id', '=', 'clientes.id')
       .select('ordens_de_servico.*', 'clientes.nome_completo as nome_cliente')
@@ -150,6 +153,7 @@ export async function atualizarOrdemServico(req, res) {
 
   for (const campo of camposPermitidos) {
     if (dadosEntrada[campo] !== undefined) {
+      // Validações específicas (ex: cliente_id existe, valores são numéricos) podem ser adicionadas aqui
       dadosParaAtualizar[campo] = dadosEntrada[campo];
       algumCampoValidoPresente = true;
     }
@@ -163,7 +167,7 @@ export async function atualizarOrdemServico(req, res) {
 
   try {
     await db.transaction(async (trx) => {
-      const osAtual = await trx('ordens_de_servico').where({ id }).first();
+      const osAtual = await trx('ordens_de_servico').where({ id: parseInt(id, 10) }).first(); // Garante que ID seja número
       if (!osAtual) {
         const err = new Error('Ordem de Serviço não encontrada para atualização.');
         err.status = 404;
@@ -186,21 +190,22 @@ export async function atualizarOrdemServico(req, res) {
         dadosParaAtualizar.valor_desconto !== undefined
       ) {
         const maoDeObra = dadosParaAtualizar.valor_servico_mao_de_obra !== undefined ? Number(dadosParaAtualizar.valor_servico_mao_de_obra) : Number(osAtual.valor_servico_mao_de_obra);
-        const pecas = dadosParaAtualizar.valor_total_pecas !== undefined ? Number(dadosParaAtualizar.valor_total_pecas) : Number(osAtual.valor_total_pecas);
-        const desconto = dadosParaAtualizar.valor_desconto !== undefined ? Number(dadosParaAtualizar.valor_desconto) : Number(osAtual.valor_desconto);
+        const pecas = dadosParaAtualizar.valor_total_pecas !== undefined ? Number(dadosParaAtualizar.valor_total_pecas) : Number(osAtual.valor_total_pecas || 0);
+        const desconto = dadosParaAtualizar.valor_desconto !== undefined ? Number(dadosParaAtualizar.valor_desconto) : Number(osAtual.valor_desconto || 0);
         dadosParaAtualizar.valor_total_os = (maoDeObra + pecas) - desconto;
-      } else if (osAtual.valor_total_os === null || osAtual.valor_total_os === undefined || typeof osAtual.valor_total_os !== 'number') {
-         // Se não houver atualização nos valores, mas o valor total ainda não foi calculado ou é inválido, calcula-o com os valores atuais ou defaults.
-        dadosParaAtualizar.valor_total_os = (Number(osAtual.valor_servico_mao_de_obra) + Number(osAtual.valor_total_pecas || 0)) - Number(osAtual.valor_desconto || 0);
+      } else if (typeof osAtual.valor_total_os !== 'number') {
+         dadosParaAtualizar.valor_total_os = (Number(osAtual.valor_servico_mao_de_obra) + Number(osAtual.valor_total_pecas || 0)) - Number(osAtual.valor_desconto || 0);
       }
 
 
       await trx('ordens_de_servico')
-        .where({ id })
+        .where({ id: parseInt(id, 10) })
         .update(dadosParaAtualizar);
 
       const statusNovo = dadosParaAtualizar.status_os || statusAnterior;
       const valorFinalOSCalculado = dadosParaAtualizar.valor_total_os !== undefined ? dadosParaAtualizar.valor_total_os : osAtual.valor_total_os;
+      const formaPgtoFinal = dadosParaAtualizar.forma_pagamento || osAtual.forma_pagamento || 'N/A';
+
 
       const statusDePagamento = ["Entregue", "Pago", "Finalizado e Pago"]; // Ajuste conforme seus status
 
@@ -211,9 +216,9 @@ export async function atualizarOrdemServico(req, res) {
           valor: valorFinalOSCalculado,
           data_movimentacao: db.fn.now(),
           categoria: 'Receita de Serviço',
-          ordem_servico_id: id,
+          ordem_servico_id: parseInt(id, 10),
           cliente_id: osAtual.cliente_id,
-          observacoes: `Pagamento referente à O.S. ${osAtual.numero_os}`
+          observacoes: `Pagamento referente à O.S. ${osAtual.numero_os}. Forma: ${formaPgtoFinal}`
         });
         console.log(`Lançamento no caixa para O.S. ${id} no valor de ${valorFinalOSCalculado} realizado.`);
       }
@@ -221,7 +226,7 @@ export async function atualizarOrdemServico(req, res) {
       const osAtualizada = await trx('ordens_de_servico')
         .join('clientes', 'ordens_de_servico.cliente_id', '=', 'clientes.id')
         .select('ordens_de_servico.*', 'clientes.nome_completo as nome_cliente')
-        .where('ordens_de_servico.id', id)
+        .where('ordens_de_servico.id', parseInt(id, 10))
         .first();
 
       res.status(200).json(osAtualizada);
@@ -240,7 +245,7 @@ export async function deletarOrdemServico(req, res) {
   const { id } = req.params;
 
   try {
-    const deletado = await db('ordens_de_servico').where({ id }).del();
+    const deletado = await db('ordens_de_servico').where({ id: parseInt(id, 10) }).del();
 
     if (deletado) {
       res.status(200).json({ mensagem: 'Ordem de Serviço deletada com sucesso.' });
