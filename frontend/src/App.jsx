@@ -4,7 +4,7 @@ import { Routes, Route, Link } from 'react-router-dom';
 import ClientesPage from './pages/ClientesPage';
 import ProdutosPage from './pages/ProdutosPage';
 import OrdensServicoPage from './pages/OrdensServicoPage';
-import RelatoriosPage from './pages/RelatoriosPage'; // 👈 Importar a nova página
+import RelatoriosPage from './pages/RelatoriosPage'; // Importa a página de Relatórios
 
 // ... (Componente PixCafezinho se existir) ...
 
@@ -19,7 +19,7 @@ function App() {
             <li><Link to="/clientes" className="nav-button">Clientes</Link></li>
             <li><Link to="/produtos" className="nav-button">Produtos</Link></li>
             <li><Link to="/ordens-servico" className="nav-button">Ordens de Serviço</Link></li>
-            <li><Link to="/relatorios" className="nav-button">Relatórios</Link></li> {/* 👈 Novo Link */}
+            <li><Link to="/relatorios" className="nav-button">Relatórios</Link></li> {/* Link para Relatórios */}
           </ul>
         </nav>
       </header>
@@ -30,7 +30,7 @@ function App() {
           <Route path="/clientes" element={<ClientesPage />} />
           <Route path="/produtos" element={<ProdutosPage />} />
           <Route path="/ordens-servico" element={<OrdensServicoPage />} />
-          <Route path="/relatorios" element={<RelatoriosPage />} /> {/* 👈 Nova Rota */}
+          <Route path="/relatorios" element={<RelatoriosPage />} /> {/* Rota para Relatórios */}
         </Routes>
       </main>
 
