@@ -3,57 +3,71 @@ import React, { useState, useEffect, useCallback } from 'react';
 import OrdemServicoForm from '../components/OrdensServico/OrdemServicoForm';
 import OrdemServicoList from '../components/OrdensServico/OrdemServicoList';
 import { getOrdensServico } from '../services/apiOrdemServico';
-import { getClientes } from '../services/apiCliente'; // Para popular o dropdown no formulário
+import { getClientes } from '../services/apiCliente'; // Para popular o dropdown de clientes no formulário
+import { getProdutos } from '../services/apiProduto'; // Para popular a seleção de peças no formulário
 
 function OrdensServicoPage() {
   const [ordensServico, setOrdensServico] = useState([]);
   const [clientes, setClientes] = useState([]);
-  const [osParaEditar, setOsParaEditar] = useState(null);
+  const [produtosDisponiveis, setProdutosDisponiveis] = useState([]); // Para o formulário de OS
+  const [osParaEditar, setOsParaEditar] = useState(null); // O.S. selecionada para edição
   
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Função unificada para carregar dados da página (OS e Clientes)
+  // Função unificada para carregar todos os dados necessários para esta página
   const carregarDadosDaPagina = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const [dataOS, dataClientes] = await Promise.all([
+      // Promise.all para buscar OS, Clientes e Produtos em paralelo
+      const [dataOS, dataClientes, dataProdutos] = await Promise.all([
         getOrdensServico(),
-        getClientes()
+        getClientes(),
+        getProdutos()
       ]);
+
       setOrdensServico(dataOS || []);
       setClientes(dataClientes || []);
+      setProdutosDisponiveis(dataProdutos || []);
+
+      console.log('Clientes carregados na OrdensServicoPage:', dataClientes);
+      console.log('Produtos carregados na OrdensServicoPage:', dataProdutos);
+
     } catch (err) {
-      const mensagemErro = 'Falha ao carregar dados para a página de Ordens de Serviço.';
+      const mensagemErro = 'Falha ao carregar dados para a página de Ordens de Serviço. Verifique o console do navegador e do backend.';
       setError(mensagemErro);
       console.error(mensagemErro, err);
-      setOrdensServico([]); // Garante que seja um array em caso de erro
-      setClientes([]);     // Garante que seja um array em caso de erro
+      // Define como arrays vazios em caso de erro para evitar quebras nos componentes filhos
+      setOrdensServico([]);
+      setClientes([]);
+      setProdutosDisponiveis([]);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, []); // Não depende de nada para a chamada inicial, mas useCallback é bom se for passada como dep.
 
   useEffect(() => {
     carregarDadosDaPagina();
-  }, [carregarDadosDaPagina]);
+  }, [carregarDadosDaPagina]); // Executa ao montar e se carregarDadosDaPagina mudar (o que não deve acontecer)
 
   // Chamada após uma OS ser criada ou atualizada com sucesso
   const handleOsSalva = () => {
     setOsParaEditar(null); // Limpa o formulário (volta para modo de criação)
-    carregarDadosDaPagina(); // Recarrega a lista de OS e Clientes (clientes pode não ter mudado, mas é seguro)
+    carregarDadosDaPagina(); // Recarrega todos os dados da página
   };
 
   // Chamada quando o botão "Editar" na lista é clicado
   const handleIniciarEdicao = (os) => {
     setOsParaEditar(os);
-    window.scrollTo({ top: 0, behavior: 'smooth' }); // Rola para o formulário no topo
+    // Rola a tela para o topo onde o formulário geralmente está
+    window.scrollTo({ top: 0, behavior: 'smooth' }); 
   };
 
   // Chamada quando a edição é cancelada no formulário
   const handleEdicaoCancelada = () => {
     setOsParaEditar(null); // Limpa o formulário
+    setError(''); // Limpa possíveis erros do formulário
   };
 
   // Chamada após uma OS ser deletada com sucesso
@@ -63,12 +77,13 @@ function OrdensServicoPage() {
   };
 
   // Feedback de loading inicial
-  if (loading && ordensServico.length === 0 && clientes.length === 0) {
+  if (loading && ordensServico.length === 0 && clientes.length === 0 && produtosDisponiveis.length === 0) {
     return <p style={{textAlign: 'center', marginTop: '30px'}}>Carregando dados da página de Ordens de Serviço...</p>;
   }
   
   // Feedback de erro principal se dados essenciais não carregarem
-  if (error && ordensServico.length === 0 && clientes.length === 0) {
+  // Este erro será mais genérico. Erros específicos de API já são logados no console pelos serviços.
+  if (error && ordensServico.length === 0 && clientes.length === 0 && produtosDisponiveis.length === 0) {
     return <p style={{ color: 'red', textAlign: 'center', marginTop: '30px' }}>{error}</p>;
   }
 
@@ -80,12 +95,15 @@ function OrdensServicoPage() {
         osParaEditar={osParaEditar}
         onEdicaoCancelada={handleEdicaoCancelada}
         clientes={clientes} // Passa a lista de clientes para o formulário
+        produtosDisponiveis={produtosDisponiveis} // Passa a lista de produtos para o formulário
       />
       
-      {/* Exibe erro se houver, mesmo com OS ou Clientes na tela, mas de forma menos intrusiva */}
+      {/* Exibe erro se houver uma mensagem de erro no estado, mesmo com alguns dados na tela */}
       {error && <p style={{ color: '#ff8a8a', background: '#4b2323', padding: '10px', borderRadius: '7px', textAlign: 'center', margin: '15px 0' }}>{error}</p>}
 
-      {loading && <p style={{textAlign: 'center'}}>Atualizando lista de Ordens de Serviço...</p>}
+      {/* Feedback de loading para recargas parciais */}
+      {loading && (ordensServico.length > 0 || clientes.length > 0 || produtosDisponiveis.length > 0) && <p style={{textAlign: 'center'}}>Atualizando dados...</p>}
+      
       <OrdemServicoList
         ordensServico={ordensServico}
         onOsDeletada={handleOsDeletada}
