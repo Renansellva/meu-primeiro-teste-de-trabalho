@@ -15,3 +15,203 @@ code {
     monospace;
 }
 
+/* começando daqui */
+
+/* Adicione ao seu frontend/src/style.css ou index.css */
+
+/* Estilos gerais para os contêineres de formulário que você já tem */
+/* Ex: .cliente-form, .produto-form, .os-form, .caixa-form */
+.cliente-form, 
+.produto-form, 
+.os-form, 
+.caixa-form,
+.filtros-relatorios, /* Para a seção de filtros da página de relatórios */
+.busca-produtos { /* Para a seção de busca da página de produtos */
+  background: rgba(28, 33, 54, 0.85); /* Fundo um pouco mais escuro ou o que você usa */
+  padding: 25px;
+  border-radius: 12px;
+  border: 1px solid #313b5f; /* Borda sutil */
+  margin-bottom: 30px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Sombra suave */
+}
+
+/* Estilo para os títulos dentro dos formulários/seções */
+.cliente-form h3, 
+.produto-form h3, 
+.os-form h3, 
+.caixa-form h3,
+.filtros-relatorios h3,
+.busca-produtos h3 {
+  color: #30e88b; /* Sua cor de destaque verde */
+  margin-top: 0;
+  margin-bottom: 25px;
+  border-bottom: 1px solid #313b5f;
+  padding-bottom: 10px;
+}
+.os-form h4 { /* Para os subtítulos no formulário de OS */
+   color: #30e88b;
+   margin-top: 25px;
+   margin-bottom: 15px;
+   border-top: 1px solid #313b5f;
+   padding-top: 15px;
+}
+
+
+/* Divs que agrupam label e input */
+form div {
+  margin-bottom: 18px; /* Espaçamento entre os campos do formulário */
+}
+
+form label {
+  display: block; /* Label ocupa a linha toda */
+  margin-bottom: 6px; /* Espaço entre label e input */
+  color: #c7d0f7; /* Cor clara para labels */
+  font-weight: 500;
+  font-size: 0.95em;
+}
+
+/* Inputs, Textareas, Selects - você já tem estilos, vamos refinar e unificar */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="date"],
+textarea,
+select {
+  width: 100%;
+  padding: 10px 14px; /* Padding interno consistente */
+  border: 1px solid #4a5568; /* Borda um pouco mais visível */
+  border-radius: 6px; /* Bordas levemente arredondadas */
+  background-color: #2d3748; /* Fundo escuro para os campos */
+  color: #f4f6fa; /* Texto claro */
+  font-size: 1rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="number"]:focus,
+input[type="date"]:focus,
+textarea:focus,
+select:focus {
+  border-color: #30e88b; /* Sua cor de destaque verde no foco */
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(48, 232, 139, 0.3); /* Sombra sutil no foco */
+  background-color: #313b5f; /* Leve mudança de fundo no foco */
+}
+
+textarea {
+  min-height: 80px; /* Altura mínima para textareas */
+  resize: vertical; /* Permite redimensionar verticalmente */
+}
+
+/* Grid para campos lado a lado (como no OrdemServicoForm) */
+/* Se você usou display: grid nos seus formulários, essa classe não é necessária,
+   mas se não usou, pode criar um container para agrupar campos:
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px 20px;
+}
+*/
+
+/* Botões dentro de formulários */
+form .btn-enviar, 
+form .button {
+  padding: 10px 20px; /* Padding um pouco menor para botões de formulário */
+  font-size: 1rem;
+  margin-top: 10px; /* Ajuste a margem se o gap do flex/grid já cuidar disso */
+}
+form div > button:not(:last-child), 
+form div > .button:not(:last-child) { /* Para botões lado a lado */
+    margin-right: 10px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+/* Estilos para itens de lista (como em ProdutoList, OrdemServicoList) */
+.os-list ul, 
+.produto-list ul, 
+.cliente-list ul { /* Adicione a classe .cliente-list ao seu ul de clientes se ainda não tiver */
+  list-style-type: none;
+  padding: 0;
+}
+
+.os-list li, 
+.produto-list li, 
+.cliente-list li {
+  background: rgba(28, 33, 54, 0.7); /* Fundo para cada item */
+  border: 1px solid #313b5f;
+  padding: 15px;
+  margin-bottom: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.os-list li p, 
+.produto-list li p, 
+.cliente-list li p {
+  margin: 0 0 8px 0;
+  line-height: 1.5;
+}
+.os-list li strong, 
+.produto-list li strong, 
+.cliente-list li strong {
+  color: #e0e0e0; /* Destaque para o texto em negrito */
+}
+
+/* Div para botões de ação dentro dos itens da lista */
+.os-list li div:has(> button),
+.produto-list li div:has(> button),
+.cliente-list li div:has(> button) {
+  margin-top: 15px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end; /* Alinha botões à direita */
+}
+
+/* Estilos para Tabelas (como nos Relatórios ou MovimentacaoCaixaList) */
+.tabela-relatorio { /* Adicione esta classe às suas tabelas */
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9em;
+  margin-top: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.tabela-relatorio th, 
+.tabela-relatorio td {
+  padding: 10px 12px; /* Padding nas células */
+  border: 1px solid #313b5f; /* Bordas das células */
+  text-align: left;
+}
+
+.tabela-relatorio thead tr {
+  background-color: #1a1c29; /* Fundo do cabeçalho da tabela */
+  color: #30e88b; /* Cor do texto do cabeçalho */
+  font-weight: bold;
+}
+
+.tabela-relatorio tbody tr:nth-child(even) {
+  background-color: rgba(28, 33, 54, 0.5); /* Cor alternada para linhas (opcional) */
+}
+
+.tabela-relatorio tbody tr:hover {
+  background-color: rgba(48, 232, 139, 0.1); /* Destaque ao passar o mouse */
+}
+
+.tabela-relatorio td[style*="text-align: right"] { /* Para alinhar números à direita */
+  font-variant-numeric: tabular-nums; /* Ajuda a alinhar números */
+}

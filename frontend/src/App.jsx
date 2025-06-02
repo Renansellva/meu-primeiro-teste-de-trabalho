@@ -1,12 +1,16 @@
 // frontend/src/App.jsx
 import React from 'react';
 import { Routes, Route, Link } from 'react-router-dom';
+
+// Importação das Páginas
 import ClientesPage from './pages/ClientesPage';
 import ProdutosPage from './pages/ProdutosPage';
 import OrdensServicoPage from './pages/OrdensServicoPage';
-import RelatoriosPage from './pages/RelatoriosPage'; // Importa a página de Relatórios
+import CaixaPage from './pages/CaixaPage';
+import RelatoriosPage from './pages/RelatoriosPage';
 
 // Se você tiver estilos globais que quer aplicar aqui ou no main.jsx
+// Lembre-se de criar e importar seu arquivo CSS principal se ainda não o fez
 // import './style.css'; // ou o nome do seu arquivo CSS principal
 
 // Componente PixCafezinho (opcional, você pode remover se não for usar)
@@ -20,7 +24,7 @@ function PixCafezinho() {
   );
 }
 
-function App() { // A função principal do seu aplicativo
+function App() {
   return (
     <div className="App">
       <header style={{
@@ -45,36 +49,48 @@ function App() { // A função principal do seu aplicativo
             <li><Link to="/clientes" className="nav-button">Clientes</Link></li>
             <li><Link to="/produtos" className="nav-button">Produtos</Link></li>
             <li><Link to="/ordens-servico" className="nav-button">Ordens de Serviço</Link></li>
+            <li><Link to="/caixa" className="nav-button">Controle de Caixa</Link></li>
             <li><Link to="/relatorios" className="nav-button">Relatórios</Link></li>
-            {/* Adicione mais links de navegação aqui no futuro */}
           </ul>
         </nav>
       </header>
 
-      <main style={{ padding: '0 20px 20px 20px' }}> {/* Adicionado padding inferior */}
+      <main style={{ padding: '0 20px 20px 20px', minHeight: 'calc(100vh - 200px)' }}> {/* Ajuste minHeight conforme necessário */}
         <Routes>
           <Route path="/" element={
             <div style={{ textAlign: 'center', marginTop: '50px' }}>
               <h2>Bem-vindo ao Sistema de Gestão!</h2>
               <p>Selecione uma opção no menu acima para começar.</p>
+              <p style={{marginTop: '20px', fontSize: '0.9em', color: '#aaa'}}>
+                Este sistema permite gerenciar clientes, produtos, ordens de serviço,
+                controlar o caixa e visualizar relatórios importantes para sua loja.
+              </p>
             </div>
           } />
           <Route path="/clientes" element={<ClientesPage />} />
           <Route path="/produtos" element={<ProdutosPage />} />
           <Route path="/ordens-servico" element={<OrdensServicoPage />} />
+          <Route path="/caixa" element={<CaixaPage />} />
           <Route path="/relatorios" element={<RelatoriosPage />} />
-          {/* Defina outras rotas para os módulos de Caixa, etc. aqui */}
+          {/* Rota para páginas não encontradas */}
+          <Route path="*" element={
+            <div style={{ textAlign: 'center', marginTop: '50px' }}>
+              <h2>Página Não Encontrada (Erro 404)</h2>
+              <p>A página que você está procurando não existe.</p>
+              <Link to="/" className="nav-button" style={{marginTop: '20px', display: 'inline-block'}}>Voltar para o Dashboard</Link>
+            </div>
+          } />
         </Routes>
       </main>
 
       {/* Se quiser manter o PixCafezinho, descomente a linha abaixo e garanta que o componente está definido */}
       {/* <PixCafezinho /> */}
 
-      <footer style={{ textAlign: 'center', padding: '20px', marginTop: '40px', borderTop: '1px solid #333', color: '#aaa' }}>
-        <p>&copy; {new Date().getFullYear()} Minha Loja - Sistema de Gestão</p>
+      <footer style={{ textAlign: 'center', padding: '20px', marginTop: 'auto', borderTop: '1px solid #313b5f', color: '#aaa', background: '#1a1c29' }}>
+        <p>&copy; {new Date().getFullYear()} Minha Loja - Sistema de Gestão. Todos os direitos reservados.</p>
       </footer>
     </div>
   );
 }
 
-export default App; // 👈 ESSA LINHA GARANTE A EXPORTAÇÃO PADRÃO
+export default App; // Garante a exportação padrão
