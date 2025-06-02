@@ -13,18 +13,18 @@ function OrdemServicoForm({ onOsSalva, osParaEditar, onEdicaoCancelada, clientes
   const [defeitoRelatadoCliente, setDefeitoRelatadoCliente] = useState('');
   const [acessoriosDeixados, setAcessoriosDeixados] = useState('');
   const [valorServicoMaoDeObra, setValorServicoMaoDeObra] = useState('');
-  const [valorTotalPecasInput, setValorTotalPecasInput] = useState(''); // Campo para input manual de valor de peças se necessário
-  const [valorDesconto, setValorDesconto] = useState(''); // ESTADO CORRETO
-  const [statusOs, setStatusOs] = useState('Orçamento');
+  // valorTotalPecas será influenciado pela lista de peças adicionadas
+  const [valorDesconto, setValorDesconto] = useState('');
+  const [statusOs, setStatusOs] = useState('Orçamento'); // Status inicial padrão
   const [diagnosticoTecnico, setDiagnosticoTecnico] = useState('');
   const [servicoExecutado, setServicoExecutado] = useState('');
-  const [pecasUtilizadasDescricao, setPecasUtilizadasDescricao] = useState(''); // Para o campo de texto de peças, se mantido
+  // pecasUtilizadasDescricao não é mais um input direto, será gerado pelo backend
   const [observacoesInternas, setObservacoesInternas] = useState('');
   const [dataPrevisaoEntrega, setDataPrevisaoEntrega] = useState('');
   const [formaPagamento, setFormaPagamento] = useState('');
 
   // Estados para gerenciar a adição de peças
-  const [pecasNaOS, setPecasNaOS] = useState([]); // Array de { produto_id, nome_produto, quantidade, preco_venda_unitario_aplicado, subtotal }
+  const [pecasNaOS, setPecasNaOS] = useState([]); // Array de { produto_id, nome_produto, quantidade, preco_venda_unitario_aplicado }
   const [pecaSelecionadaId, setPecaSelecionadaId] = useState('');
   const [quantidadePeca, setQuantidadePeca] = useState(1);
   const [precoVendaPecaAplicado, setPrecoVendaPecaAplicado] = useState('');
@@ -40,9 +40,9 @@ function OrdemServicoForm({ onOsSalva, osParaEditar, onEdicaoCancelada, clientes
   const limparFormularioCompleto = () => {
     setClienteId(''); setTipoEquipamento(''); setMarcaEquipamento('');
     setModeloEquipamento(''); setNumeroSerieImei(''); setDefeitoRelatadoCliente('');
-    setAcessoriosDeixados(''); setValorServicoMaoDeObra(''); setValorTotalPecasInput('');
+    setAcessoriosDeixados(''); setValorServicoMaoDeObra('');
     setValorDesconto(''); setStatusOs('Orçamento'); setDiagnosticoTecnico('');
-    setServicoExecutado(''); setPecasUtilizadasDescricao(''); setObservacoesInternas('');
+    setServicoExecutado(''); setObservacoesInternas('');
     setDataPrevisaoEntrega(''); setFormaPagamento('');
     setPecasNaOS([]);
     limparCamposDeAdicionarPeca();
@@ -67,31 +67,26 @@ function OrdemServicoForm({ onOsSalva, osParaEditar, onEdicaoCancelada, clientes
       setDefeitoRelatadoCliente(osParaEditar.defeito_relatado_cliente || '');
       setAcessoriosDeixados(osParaEditar.acessorios_deixados || '');
       setValorServicoMaoDeObra(osParaEditar.valor_servico_mao_de_obra !== null ? String(osParaEditar.valor_servico_mao_de_obra) : '0');
-      setValorTotalPecasInput(osParaEditar.valor_total_pecas !== null ? String(osParaEditar.valor_total_pecas) : '0'); // Preenche o input se existir
+      // O valor_total_pecas é calculado a partir das peças, mas podemos mostrar o valor salvo
+      // setValorTotalPecasInput(osParaEditar.valor_total_pecas !== null ? String(osParaEditar.valor_total_pecas) : '0');
       setValorDesconto(osParaEditar.valor_desconto !== null ? String(osParaEditar.valor_desconto) : '0');
       setStatusOs(osParaEditar.status_os || 'Orçamento');
       setDiagnosticoTecnico(osParaEditar.diagnostico_tecnico || '');
       setServicoExecutado(osParaEditar.servico_executado || '');
-      setPecasUtilizadasDescricao(osParaEditar.pecas_utilizadas || ''); // String descritiva
+      // Para preencher 'pecasNaOS' ao editar, precisaríamos que 'osParaEditar' viesse com um array estruturado de peças.
+      // Como o backend armazena uma string descritiva e recalcula com base no 'pecasSelecionadas' enviado,
+      // a lista de peças aqui começará vazia no modo de edição. O usuário precisará re-adicionar as peças
+      // se a intenção for modificar o conjunto de peças da OS.
+      setPecasNaOS([]); // Para simplificar a edição de peças por enquanto.
       setObservacoesInternas(osParaEditar.observacoes_internas || '');
       const dataFormatada = osParaEditar.data_previsao_entrega ? osParaEditar.data_previsao_entrega.split('T')[0] : '';
       setDataPrevisaoEntrega(dataFormatada);
       setFormaPagamento(osParaEditar.forma_pagamento || '');
-      
-      // IMPORTANTE: Lógica para preencher `pecasNaOS` ao editar uma OS existente.
-      // Se o backend retornar um array de peças estruturado em `osParaEditar.pecasSelecionadas` (ideal),
-      // você preencheria `setPecasNaOS` aqui.
-      // Como nosso backend atual apenas armazena uma string `pecas_utilizadas` e recalcula tudo
-      // com base em um novo array `pecasSelecionadas` enviado na atualização,
-      // a lista de peças no formulário de edição começará vazia. O usuário precisará
-      // re-adicionar as peças se quiser modificar essa parte.
-      setPecasNaOS([]);
-      
       setSucesso(''); setErro('');
     } else {
       limparFormularioCompleto();
     }
-  }, [osParaEditar]); // Dependência principal é osParaEditar
+  }, [osParaEditar]);
 
   // Atualiza o preço da peça automaticamente quando uma peça é selecionada no dropdown
   useEffect(() => {
@@ -103,7 +98,8 @@ function OrdemServicoForm({ onOsSalva, osParaEditar, onEdicaoCancelada, clientes
         setPrecoVendaPecaAplicado('');
       }
     } else {
-      setPrecoVendaPecaAplicado('');
+      // Limpa o preço se nenhuma peça estiver selecionada ou se o produto não for encontrado
+      if (!pecaSelecionadaId) setPrecoVendaPecaAplicado('');
     }
   }, [pecaSelecionadaId, produtosDisponiveis]);
 
@@ -119,7 +115,7 @@ function OrdemServicoForm({ onOsSalva, osParaEditar, onEdicaoCancelada, clientes
     }
     const pecaJaAdicionada = pecasNaOS.find(p => p.produto_id === produtoInfo.id);
     if (pecaJaAdicionada) {
-      alert(`A peça "${produtoInfo.nome_produto}" já foi adicionada. Remova-a primeiro se desejar alterar quantidade ou preço aqui.`);
+      alert(`A peça "${produtoInfo.nome_produto}" já foi adicionada. Remova-a primeiro se desejar alterar a quantidade ou preço.`);
       return;
     }
 
@@ -130,7 +126,6 @@ function OrdemServicoForm({ onOsSalva, osParaEditar, onEdicaoCancelada, clientes
         nome_produto: produtoInfo.nome_produto,
         quantidade: parseInt(quantidadePeca, 10),
         preco_venda_unitario_aplicado: parseFloat(precoVendaPecaAplicado),
-        // Subtotal pode ser calculado e exibido na lista de peças adicionadas
       }
     ]);
     limparCamposDeAdicionarPeca();
@@ -150,7 +145,6 @@ function OrdemServicoForm({ onOsSalva, osParaEditar, onEdicaoCancelada, clientes
     }
     setEnviando(true);
 
-    // O backend espera 'pecasSelecionadas' para processar o estoque e valores
     const dadosOS = {
       cliente_id: parseInt(clienteId, 10),
       tipo_equipamento: tipoEquipamento,
@@ -160,13 +154,10 @@ function OrdemServicoForm({ onOsSalva, osParaEditar, onEdicaoCancelada, clientes
       defeito_relatado_cliente: defeitoRelatadoCliente,
       acessorios_deixados: acessoriosDeixados || null,
       valor_servico_mao_de_obra: parseFloat(valorServicoMaoDeObra),
-      // valor_total_pecas será calculado pelo backend com base em pecasSelecionadas
-      // valor_desconto é enviado, e valor_total_os é calculado no backend
       valor_desconto: valorDesconto ? parseFloat(valorDesconto) : 0,
       status_os: statusOs,
       diagnostico_tecnico: diagnosticoTecnico || null,
       servico_executado: servicoExecutado || null,
-      // pecas_utilizadas (string descritiva) será gerada pelo backend
       observacoes_internas: observacoesInternas || null,
       data_previsao_entrega: dataPrevisaoEntrega || null,
       forma_pagamento: formaPagamento || null,
@@ -176,6 +167,7 @@ function OrdemServicoForm({ onOsSalva, osParaEditar, onEdicaoCancelada, clientes
         quantidade: p.quantidade,
         preco_venda_unitario_aplicado: p.preco_venda_unitario_aplicado
       }))
+      // O backend calculará valor_total_pecas e pecas_utilizadas (string)
     };
 
     try {
@@ -187,10 +179,8 @@ function OrdemServicoForm({ onOsSalva, osParaEditar, onEdicaoCancelada, clientes
         setSucesso(`O.S. #${osCriada.numero_os} criada com sucesso!`);
       }
       if (onOsSalva) {
-        onOsSalva(); // Notifica a página pai para recarregar a lista e limpar o modo edição
+        onOsSalva(); 
       }
-      // Não é necessário limpar o formulário aqui se `onOsSalva` faz com que `osParaEditar` se torne null,
-      // pois o `useEffect` cuidará da limpeza.
     } catch (error) {
       setErro(error.response?.data?.erro || `Falha ao ${ehModoEdicao ? 'atualizar' : 'criar'} O.S.`);
     }
@@ -213,6 +203,7 @@ function OrdemServicoForm({ onOsSalva, osParaEditar, onEdicaoCancelada, clientes
       {sucesso && <p style={{ color: '#30e88b', background: '#223c29', padding: '8px', borderRadius: '4px', marginBottom: '15px'  }}>{sucesso}</p>}
       
       {/* --- Seção Dados da OS e Cliente --- */}
+      <h4 style={{color: '#c7d0f7', marginTop: '0px', marginBottom: '15px'}}>Dados Gerais e do Cliente</h4>
       <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '15px 20px'}}>
         <div>
           <label htmlFor="clienteIdOS">Cliente:*</label>
@@ -225,6 +216,16 @@ function OrdemServicoForm({ onOsSalva, osParaEditar, onEdicaoCancelada, clientes
             ))}
           </select>
         </div>
+        <div>
+          <label htmlFor="statusOsForm">Status:*</label>
+          <select id="statusOsForm" value={statusOs} onChange={(e) => setStatusOs(e.target.value)} required>
+            {listaStatusOS.map(status => <option key={status} value={status}>{status}</option>)}
+          </select>
+        </div>
+      </div>
+
+      <h4 style={{color: '#c7d0f7', marginTop: '20px', marginBottom: '15px'}}>Dados do Equipamento</h4>
+      <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '15px 20px'}}>
         <div>
           <label htmlFor="tipoEquipamentoOS">Tipo Equipamento:*</label>
           <input type="text" id="tipoEquipamentoOS" value={tipoEquipamento} onChange={(e) => setTipoEquipamento(e.target.value)} required />
@@ -241,12 +242,6 @@ function OrdemServicoForm({ onOsSalva, osParaEditar, onEdicaoCancelada, clientes
           <label htmlFor="numeroSerieImeiOS">Nº Série / IMEI:</label>
           <input type="text" id="numeroSerieImeiOS" value={numeroSerieImei} onChange={(e) => setNumeroSerieImei(e.target.value)} />
         </div>
-        <div>
-          <label htmlFor="statusOsForm">Status:*</label>
-          <select id="statusOsForm" value={statusOs} onChange={(e) => setStatusOs(e.target.value)} required>
-            {listaStatusOS.map(status => <option key={status} value={status}>{status}</option>)}
-          </select>
-        </div>
       </div>
       <div style={{marginTop: '15px'}}>
         <label htmlFor="defeitoRelatadoOS">Defeito Relatado Cliente:*</label>
@@ -259,13 +254,13 @@ function OrdemServicoForm({ onOsSalva, osParaEditar, onEdicaoCancelada, clientes
 
       {/* --- Seção de Peças --- */}
       <h4 style={{color: '#30e88b', marginTop: '25px', marginBottom: '15px', borderTop: '1px solid #313b5f', paddingTop: '15px'}}>Peças/Produtos Utilizados na O.S.</h4>
-      <div style={{ display: 'grid', gridTemplateColumns: '3fr 1fr 2fr auto', gap: '10px', alignItems: 'flex-end', marginBottom: '15px', paddingBottom: '15px', borderBottom: '1px solid #313b5f' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '3fr 1fr 2fr auto', gap: '10px', alignItems: 'flex-end', marginBottom: '10px', paddingBottom: '15px', borderBottom: '1px solid #313b5f' }}>
         <div>
           <label htmlFor="pecaSelecionadaId">Peça/Produto:</label>
           <select id="pecaSelecionadaId" value={pecaSelecionadaId} onChange={(e) => setPecaSelecionadaId(e.target.value)}>
             <option value="">Selecione uma peça</option>
             {produtosDisponiveis && produtosDisponiveis.map(p => (
-              <option key={p.id} value={p.id} disabled={p.quantidade_estoque === 0 && !pecasNaOS.find(pnOs => pnOs.produto_id === p.id) }> {/* Permite selecionar se já está na OS, mesmo com estoque 0, para edição de preço/qtd, mas idealmente valida qtd ao adicionar */}
+              <option key={p.id} value={p.id} disabled={p.quantidade_estoque === 0 && !pecasNaOS.find(pnOs => pnOs.produto_id === p.id) }>
                 {p.nome_produto} (Estoque: {p.quantidade_estoque})
               </option>
             ))}
@@ -293,12 +288,12 @@ function OrdemServicoForm({ onOsSalva, osParaEditar, onEdicaoCancelada, clientes
               </li>
             ))}
           </ul>
-          <p style={{textAlign: 'right', fontWeight: 'bold', marginTop: '10px', color: '#30e88b'}}>+ Valor Total das Peças: R$ {valorTotalPecasAdicionadas.toFixed(2)}</p>
+          <p style={{textAlign: 'right', fontWeight: 'bold', marginTop: '10px', color: '#30e88b'}}>+ Valor Total das Peças Adicionadas: R$ {valorTotalPecasAdicionadas.toFixed(2)}</p>
         </div>
       )}
 
       {/* --- Seção Detalhes Técnicos e Financeiros da OS --- */}
-      <h4 style={{color: '#30e88b', marginTop: '25px', marginBottom: '15px', borderTop: '1px solid #313b5f', paddingTop: '15px'}}>Detalhes Técnicos e Outros Custos da OS</h4>
+      <h4 style={{color: '#c7d0f7', marginTop: '25px', marginBottom: '15px', borderTop: '1px solid #313b5f', paddingTop: '15px'}}>Detalhes Técnicos e Outros Custos da OS</h4>
       <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px 20px'}}>
         <div>
           <label htmlFor="valorServicoOS">Mão de Obra (R$):*</label>
@@ -317,11 +312,8 @@ function OrdemServicoForm({ onOsSalva, osParaEditar, onEdicaoCancelada, clientes
         <label htmlFor="servicoExecutadoOS">Serviço Executado:</label>
         <textarea id="servicoExecutadoOS" value={servicoExecutado} onChange={(e) => setServicoExecutado(e.target.value)} rows="3" />
       </div>
-       {/* O campo pecasUtilizadasDescricao não é mais um input, pois é gerado pelo backend
-           Mas se quiser uma área de texto para anotações gerais de peças, pode manter ou usar observacoesInternas
-       */}
       <div style={{marginTop: '15px'}}>
-        <label htmlFor="observacoesInternasOS">Observações Internas / Outras Peças (texto):</label>
+        <label htmlFor="observacoesInternasOS">Observações Internas:</label>
         <textarea id="observacoesInternasOS" value={observacoesInternas} onChange={(e) => setObservacoesInternas(e.target.value)} rows="2" />
       </div>
       <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px 20px', marginTop: '15px'}}>
@@ -332,7 +324,7 @@ function OrdemServicoForm({ onOsSalva, osParaEditar, onEdicaoCancelada, clientes
         <div>
             <label htmlFor="formaPagamentoOS">Forma de Pagamento:</label>
             <select id="formaPagamentoOS" value={formaPagamento} onChange={(e) => setFormaPagamento(e.target.value)}>
-                <option value="">Selecione</option> {/* Alterado para "Selecione" para indicar opcionalidade se não for pago ainda */}
+                <option value="">Selecione</option>
                 {listaFormasPagamento.map(forma => <option key={forma} value={forma}>{forma}</option>)}
             </select>
         </div>
@@ -340,7 +332,7 @@ function OrdemServicoForm({ onOsSalva, osParaEditar, onEdicaoCancelada, clientes
 
       <div style={{ marginTop: '25px', display: 'flex', gap: '10px' }}>
         <button type="submit" disabled={enviando} className="btn-enviar">
-          {enviando ? (ehModoEdicao ? 'Salvando...' : 'Criando...') : (ehModoEdicao ? 'Salvar Alterações da OS' : 'Criar OS')}
+          {enviando ? (ehModoEdicao ? 'Salvando Alterações...' : 'Criando OS...') : (ehModoEdicao ? 'Salvar Alterações da OS' : 'Criar Ordem de Serviço')}
         </button>
         {ehModoEdicao && (
           <button type="button" onClick={() => { if(onEdicaoCancelada) onEdicaoCancelada(); }} className="button" style={{ backgroundColor: '#6c757d' }}>
