@@ -426,3 +426,88 @@ main {
 .modal-body {
   padding-top: 10px;
 }
+
+
+/* Adicione ao seu arquivo CSS principal */
+
+/* Estilos para as seções do formulário */
+.form-section {
+  border: 1px solid #313b5f;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 25px;
+}
+
+.form-section legend {
+  padding: 0 10px; /* Espaçamento ao redor do título da seção */
+  font-weight: bold;
+  color: #c7d0f7; /* Cor clara para o título da seção */
+  margin-left: 10px; /* Alinha o legend com os inputs */
+}
+
+/* Grids para organizar os campos lado a lado */
+.form-grid-2-cols {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px 20px;
+}
+
+.form-grid-3-cols {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px 20px;
+}
+
+/* Grid específico para a seção de adicionar peças */
+.add-peca-grid {
+  display: grid;
+  grid-template-columns: 3fr 1fr 2fr auto; /* Colunas para peça, qtd, preço, botão */
+  gap: 10px;
+  align-items: flex-end;
+}
+
+/* Estilo para a lista de peças adicionadas à OS */
+.lista-pecas-os {
+  list-style: none;
+  padding: 0;
+  margin-top: 15px;
+}
+
+.lista-pecas-os li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 5px;
+  border-bottom: 1px dashed #4a5568;
+}
+
+.lista-pecas-os li:last-child {
+  border-bottom: none;
+}
+
+.lista-pecas-os button {
+  background: none;
+  border: none;
+  color: #ff8a8a;
+  cursor: pointer;
+  font-size: 1.2em;
+  padding: 0 5px;
+}
+
+.total-pecas-os {
+  text-align: right;
+  font-weight: bold;
+  margin-top: 10px;
+  color: #30e88b;
+}
+
+/* Media query para telas menores (empilhar grid de adição de peças) */
+@media (max-width: 768px) {
+  .add-peca-grid {
+    grid-template-columns: 1fr; /* Uma coluna só */
+    gap: 15px;
+  }
+  .add-peca-grid button {
+    width: 100%; /* Botão ocupa a largura toda */
+  }
+}
