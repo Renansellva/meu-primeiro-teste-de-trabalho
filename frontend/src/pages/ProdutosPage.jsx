@@ -2,17 +2,20 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import ProdutoForm from '../components/Produtos/ProdutoForm';
 import ProdutoList from '../components/Produtos/ProdutoList';
-import { getProdutos, pesquisarProdutosPorNome } from '../services/apiProduto'; // Certifique-se que updateProduto está em apiProduto.js
+import Modal from '../components/common/Modal'; // 👈 Importar o novo Modal
+import { getProdutos, pesquisarProdutosPorNome } from '../services/apiProduto';
 
 function ProdutosPage() {
   const [produtos, setProdutos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [termoBusca, setTermoBusca] = useState('');
-  const [produtoEmEdicao, setProdutoEmEdicao] = useState(null); // Já tínhamos este
+  
+  const [produtoEmEdicao, setProdutoEmEdicao] = useState(null); // Produto para edição
+  const [isModalOpen, setIsModalOpen] = useState(false); // 👈 Estado para controlar o modal
 
-  // Função para carregar/recarregar a lista de produtos (seja todos ou resultado da busca)
   const atualizarListaDeProdutos = useCallback(async () => {
+    // ... (sua função para carregar produtos como antes) ...
     try {
       setLoading(true);
       setError(null);
@@ -23,69 +26,51 @@ function ProdutosPage() {
         data = await getProdutos();
       }
       setProdutos(data);
-      if (data.length === 0 && termoBusca.trim()) {
-        // Opcional: setError(`Nenhum produto encontrado para "${termoBusca}".`);
-      }
     } catch (err) {
-      setError(termoBusca.trim() ? `Falha ao buscar produtos por "${termoBusca}".` : 'Falha ao carregar produtos.');
+      setError('Falha ao carregar produtos.');
       console.error(err);
       setProdutos([]);
     } finally {
       setLoading(false);
     }
-  }, [termoBusca]); // Depende de termoBusca
+  }, [termoBusca]);
 
   useEffect(() => {
     atualizarListaDeProdutos();
   }, [atualizarListaDeProdutos]);
-
-  // Chamada após um produto ser criado OU editado com sucesso
-  const handleProdutoSalvo = () => {
-    setProdutoEmEdicao(null); // Limpa o modo de edição (formulário volta para "Cadastrar Novo")
-    atualizarListaDeProdutos(); // Recarrega a lista
-  };
-
-  // Chamada quando o botão "Editar" na lista é clicado
-  const handleIniciarEdicao = (produto) => {
-    setProdutoEmEdicao(produto);
-    window.scrollTo({ top: 0, behavior: 'smooth' }); // Rola para o formulário no topo
-  };
-
-  // Chamada quando um produto é deletado
-  const handleProdutoDeletado = () => {
-    setProdutoEmEdicao(null); // Caso o produto em edição seja deletado
-    atualizarListaDeProdutos();
-  };
   
-  const handleBuscaTrigger = () => {
-    atualizarListaDeProdutos();
-  }
-
-  const limparBuscaEListarTodos = () => {
-    setTermoBusca('');
-    // A atualização da lista ocorrerá pelo useEffect devido à mudança em termoBusca,
-    // mas podemos chamar diretamente para garantir se quisermos.
-    // A lógica atual de atualizarListaDeProdutos com termoBusca vazio já lista todos.
+  const abrirModalParaCriar = () => {
+    setProdutoEmEdicao(null); // Garante que o formulário estará em modo de criação
+    setIsModalOpen(true);
   };
 
-  if (loading && produtos.length === 0 && !error && !produtoEmEdicao) return <p>Carregando produtos...</p>;
+  const abrirModalParaEditar = (produto) => {
+    setProdutoEmEdicao(produto); // Define qual produto editar
+    setIsModalOpen(true);
+  };
+
+  const fecharModal = () => {
+    setIsModalOpen(false);
+    setProdutoEmEdicao(null); // Limpa o produto em edição ao fechar
+  };
+
+  const handleProdutoSalvo = () => {
+    fecharModal(); // Fecha o modal após salvar
+    atualizarListaDeProdutos(); // E atualiza a lista
+  };
+
+  if (loading && produtos.length === 0 && !error) return <p>Carregando produtos...</p>;
+  if (error && produtos.length === 0) return <p style={{ color: 'red' }}>{error}</p>;
 
   return (
     <div className="produtos-page" style={{ padding: '20px' }}>
-      <h2>Gestão de Produtos/Peças</h2>
-      <ProdutoForm
-        onProdutoSalvo={handleProdutoSalvo} // Passa a função de callback unificada
-        produtoParaEditar={produtoEmEdicao}
-        onEdicaoCancelada={() => {
-          setProdutoEmEdicao(null); // Limpa o formulário e estado de edição
-          setErro(''); // Limpa possíveis erros do formulário
-          setSucesso(''); // Limpa possíveis mensagens de sucesso do formulário (adicionar 'setSucesso' ao ProdutoForm se ainda não tiver)
-        }}
-      />
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <h2 style={{ margin: 0, color: '#30e88b' }}>Gestão de Produtos/Peças</h2>
+        <button onClick={abrirModalParaCriar} className="btn-enviar">+ Novo Produto</button>
+      </div>
 
-      {/* Formulário de Busca (código existente) */}
-      <div className="busca-produtos" style={{ margin: '20px 0', padding: '15px', border: '1px solid #ccc', borderRadius: '8px' }}>
-        <h3>Pesquisar Produtos por Nome</h3>
+      <div className="busca-produtos" style={{ marginBottom: '20px', padding: '15px', border: '1px solid #313b5f', borderRadius: '8px', background: 'rgba(28, 33, 54, 0.96)' }}>
+        <h3 style={{marginTop: 0}}>Pesquisar Produtos por Nome</h3>
         <input
           type="text"
           placeholder="Digite o nome do produto..."
@@ -93,20 +78,35 @@ function ProdutosPage() {
           onChange={(e) => setTermoBusca(e.target.value)}
           style={{ marginRight: '10px', padding: '8px', borderRadius: '4px', border: '1px solid #ddd' }}
         />
-        <button onClick={handleBuscaTrigger} className="button" style={{ marginRight: '10px' }}>Pesquisar</button>
+        <button onClick={atualizarListaDeProdutos} className="button" style={{ marginRight: '10px' }}>Pesquisar</button>
         {termoBusca && (
-          <button onClick={limparBuscaEListarTodos} className="button" style={{ backgroundColor: '#6c757d' }}>Limpar Busca</button>
+          <button onClick={() => setTermoBusca('')} className="button" style={{ backgroundColor: '#6c757d' }}>Limpar Busca</button>
         )}
-        {error && !loading && <p style={{ color: 'red', marginTop: '10px' }}>{error}</p>}
       </div>
 
-      {loading && produtos.length > 0 && <p>Atualizando lista...</p>}
+      {loading && <p>Atualizando lista...</p>}
+      {error && !loading && <p style={{ color: 'red' }}>{error}</p>}
+      
       <ProdutoList
         produtos={produtos}
-        onProdutoVendido={handleProdutoSalvo} // Pode usar a mesma callback se a venda também precisar recarregar a lista
-        onProdutoDeletado={handleProdutoDeletado}
-        onEditarProduto={handleIniciarEdicao}
+        // As funções de venda/deleção agora seriam passadas aqui também
+        onProdutoVendido={atualizarListaDeProdutos}
+        onProdutoDeletado={atualizarListaDeProdutos}
+        onEditarProduto={abrirModalParaEditar} // Abre o modal para edição
       />
+
+      {/* O Modal com o formulário dentro */}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={fecharModal}
+        title={produtoEmEdicao ? `Editando Produto: ${produtoEmEdicao.nome_produto}` : "Cadastrar Novo Produto/Peça"}
+      >
+        <ProdutoForm
+          onProdutoSalvo={handleProdutoSalvo}
+          produtoParaEditar={produtoEmEdicao}
+          onEdicaoCancelada={fecharModal}
+        />
+      </Modal>
     </div>
   );
 }

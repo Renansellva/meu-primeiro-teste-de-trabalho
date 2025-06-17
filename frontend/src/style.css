@@ -310,3 +310,119 @@ main {
   flex-grow: 1; /* Faz o conteúdo principal ocupar o espaço disponível */
   padding: 20px; /* Mantém o padding que você tinha */
 }
+
+
+/* Adicione ao seu arquivo CSS principal */
+
+/* Container para os botões de acesso rápido */
+.quick-actions-container {
+  display: flex;
+  justify-content: center; /* Centraliza os botões */
+  align-items: center;
+  gap: 25px; /* Espaço entre os botões */
+  flex-wrap: wrap; /* Permite quebrar linha em telas menores */
+  padding: 20px 0;
+  border-top: 1px solid #313b5f;
+  border-bottom: 1px solid #313b5f;
+}
+
+/* Estilo do botão de acesso rápido */
+.quick-action-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 30px;
+  background-color: #2d3748; /* Cor de fundo */
+  color: #e2e8f0;
+  text-decoration: none;
+  font-size: 1.1em; /* Tamanho da fonte */
+  font-weight: 600;
+  border-radius: 8px;
+  border: 1px solid #4a5568;
+  transition: all 0.2s ease-in-out;
+  flex-grow: 1; /* Faz os botões tentarem ocupar o espaço */
+  max-width: 300px; /* Largura máxima para cada botão */
+  text-align: center;
+}
+
+.quick-action-button:hover {
+  background-color: #30e88b; /* Sua cor de destaque verde no hover */
+  color: #1a1c29; /* Texto escuro para contraste */
+  transform: translateY(-3px) scale(1.02); /* Efeito de elevação */
+  box-shadow: 0 4px 15px rgba(48, 232, 139, 0.2); /* Sombra verde */
+  border-color: #30e88b;
+}
+
+/* Adicione ao seu arquivo CSS principal */
+
+/* Fundo escurecido que cobre a página inteira */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7); /* Fundo preto com 70% de opacidade */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000; /* Garante que o modal fique na frente de tudo */
+  animation: fadeIn 0.3s ease; /* Reutiliza sua animação de fadeIn */
+}
+
+/* A caixa/janela do modal */
+.modal-content {
+  background: #232946; /* Cor de fundo do seu tema */
+  padding: 25px 30px;
+  border-radius: 12px;
+  border: 1px solid #313b5f;
+  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.3);
+  width: 90%;
+  max-width: 700px; /* Largura máxima do modal */
+  max-height: 90vh; /* Altura máxima para não ocupar a tela toda */
+  overflow-y: auto; /* Adiciona scroll se o conteúdo for maior que a altura máxima */
+  position: relative;
+  animation: slideIn 0.4s ease-out;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Cabeçalho do modal */
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #313b5f;
+  padding-bottom: 15px;
+  margin-bottom: 20px;
+}
+
+.modal-title {
+  margin: 0;
+  color: #30e88b; /* Sua cor de destaque */
+  font-size: 1.5em;
+}
+
+/* Botão de fechar (o 'x' no canto) */
+.modal-close-button {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: #aaa;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  transition: color 0.2s;
+}
+
+.modal-close-button:hover {
+  color: #fff;
+}
+
+/* Corpo do modal onde o formulário entra */
+.modal-body {
+  padding-top: 10px;
+}
