@@ -1,28 +1,24 @@
 {
-  "name": "minha-loja-backend",
+  "name": "minha-loja-knex-backend",
   "version": "1.0.0",
-  "description": "Backend para o sistema de gestão da loja com Express e Prisma",
+  "description": "Backend para o sistema de gestão da loja com Express e Knex.js",
   "main": "src/server.js",
   "type": "module",
   "scripts": {
     "start": "node src/server.js",
-    "dev": "nodemon src/server.js",
-    "build": "npx prisma generate",
-    "seed": "npx prisma db seed"
+    "dev": "nodemon src/server.js"
   },
   "author": "Renan Silva",
   "license": "ISC",
   "dependencies": {
-    "@prisma/client": "^5.16.2",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
-    "express": "^4.19.2"
+    "express": "^4.19.2",
+    "knex": "^3.1.0",
+    "pg": "^8.12.0",
+    "sqlite3": "^5.1.7"
   },
   "devDependencies": {
-    "nodemon": "^3.1.4",
-    "prisma": "^5.16.2"
-  },
-  "prisma": {
-    "seed": "node prisma/seed.js"
+    "nodemon": "^3.1.4"
   }
 }
