@@ -1,32 +1,28 @@
 {
-  "name": "backend",
+  "name": "minha-loja-backend",
   "version": "1.0.0",
-  "description": "Backend para o sistema de gestão da loja",
+  "description": "Backend para o sistema de gestão da loja com Express e Prisma",
   "main": "src/server.js",
   "type": "module",
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "npx prisma generate",
+    "seed": "npx prisma db seed"
   },
-  "keywords": [
-    "loja",
-    "gestao",
-    "api",
-    "express",
-    "node"
-  ],
-  "author": "Seu Nome Aqui",
+  "author": "Renan Silva",
   "license": "ISC",
   "dependencies": {
+    "@prisma/client": "^5.16.2",
     "cors": "^2.8.5",
-    "dotenv": "^16.5.0",
-    "express": "^5.1.0",
-    "knex": "^3.1.0",
-    "sqlite3": "^5.1.7",
-    "uuid": "^11.1.0"
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2"
   },
   "devDependencies": {
-    "nodemon": "^3.1.10"
+    "nodemon": "^3.1.4",
+    "prisma": "^5.16.2"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.js"
   }
 }
